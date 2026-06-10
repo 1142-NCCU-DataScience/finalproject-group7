@@ -38,26 +38,26 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
 ### code
 * Analysis steps
 整體分為「離線訓練」與「線上推論」兩條 pipeline,共用同一套 17 維特徵定義:
-  1. 資料採集與清理(M1) —從 YouBike 2.0 Open API 抓取約 1,700+ 站快照,過濾 Quantity > 0、act = 1,計算缺車率
+  1. 資料採集與清理(M1) — 從 YouBike 2.0 Open API 抓取約 1,700+ 站快照,過濾 Quantity > 0、act = 1,計算缺車率
   shortage_rate = 1 − available_rent_bikes / Quantity。
-  2. 空間分析(M2,m2/lisa.py) —以 k-NN(k=6)row-normalized 權重矩陣 W 計算:
+  2. 空間分析(M2,m2/lisa.py) — 以 k-NN(k=6)row-normalized 權重矩陣 W 計算:
     - 連續空間 lag spatial_lag_shortage = W @ shortage_rate(餵模型,特徵 #16)
     - Local Moran's I(LISA)→HH/LL/LH/HL/NS quadrant + pseudo p-value(999 次 conditional permutation,給前端地圖著色,不餵模型,避免 data leakage)
-  3. 特徵工程(M3,m3/build_features.py) —時間 lag(10/20/30/60 分)、變化率(delta)、時間週期特徵(hour/dow 的sin/cos、is_rush_hour、is_weekend)、distance_to_mrt(站點到最近捷運站 Haversine 距離)。
-  4. 標籤定義 —站點 i 在時間 t,若 t+60min(6 步後)shortage_rate > 0.8 則 y = 1。
-  5. 模型訓練與評估(M4,m4/train.py) →產出 model.pkl + metadata.json(含 model_version)。
-  6. 線上推論(m4/predictor.py) —載入模型,validate 17 欄位順序與 NaN,輸出 pred_prob,經 GitHub repo 中介層給 Shiny 前端。
+  3. 特徵工程(M3,m3/build_features.py) — 時間 lag(10/20/30/60 分)、變化率(delta)、時間週期特徵(hour/dow 的sin/cos、is_rush_hour、is_weekend)、distance_to_mrt(站點到最近捷運站 Haversine 距離)。
+  4. 標籤定義 — 站點 i 在時間 t,若 t+60min(6 步後)shortage_rate > 0.8 則 y = 1。
+  5. 模型訓練與評估(M4,m4/train.py) → 產出 model.pkl + metadata.json(含 model_version)。
+  6. 線上推論(m4/predictor.py) — 載入模型,validate 17 欄位順序與 NaN,輸出 pred_prob,經 GitHub repo 中介層給 Shiny 前端。
 
 * Which method or package do you use?
-  - 預測模型:XGBoost(XGBClassifier,objective=binary:logistic)—二元分類,預測未來 60 分鐘缺車機率。
-  - 空間統計:PySAL 生態系 —libpysal.weights.KNN(權重矩陣)、esda.moran.Moran_Local(LISA)。
-  - 評估/前處理:scikit-learn(TimeSeriesSplit、metrics、LogisticRegression/StandardScaler 供 baseline 比較)。
-  - 資料處理:pandas / numpy;模型序列化 joblib。
+  - 預測模型:使用 XGBoost(XGBClassifier,objective=binary:logistic)作為二元分類模型, 預測未來 60 分鐘缺車機率。
+  - 空間統計:PySAL 生態系 — libpysal.weights.KNN(權重矩陣)、esda.moran.Moran_Local(LISA)。
+  - 評估/前處理:使用 scikit-learn 的 TimeSeriesSplit 與 metrics；LogisticRegression/StandardScaler 僅用於 baseline 比較。
+  - 資料處理:pandas / numpy ;模型序列化 joblib。
 * How do you perform training and evaluation?
-  - train.py:TimeSeriesSplit(n_splits=5) 做交叉驗證(訓練集永遠在驗證集之前),每折用 early_stopping_rounds=30
-  找收斂點,再以各折 best_iteration 平均值(=397 棵樹)在全部資料上重訓最終模型。
-  - test.py / 海報圖:額外用時序 80/20 chronological holdout(前 80% 訓練、後 20% 完全分離測試),報告 held-out test 表現。
-  - 類別不平衡:正負比約 1:2.35,以 scale_pos_weight = neg/pos 校正。
+  - m4/train.py: 使用 TimeSeriesSplit(n_splits=5) 進行時序交叉驗證，確保每一折的訓練資料都早於驗證資料,每折用 early_stopping_rounds=30
+  找收斂點, 再以各折 best_iteration 平均值(=397 棵樹)在全部資料上重訓最終模型。
+  - m4/test.py / 海報圖:額外用時序 80/20 chronological holdout(前 80% 訓練、後 20% 完全分離測試),報告 held-out test 表現。
+  - 類別不平衡:正負比約 1:2.35,以 scale_pos_weight = neg/pos （負樣本數 / 正樣本數）調整正類別權重。
   - train–serveskew 防護:離線用 groupby('sno').shift(k)、線上用 ring buffer,兩條路徑以 tests/test_feature_parity.py 做
   np.allclose(atol=1e-9) 等價性測試,並驗證切點前 6 筆 lag 為 NaN(防切點洩漏)。
 * What is a null model for comparison?
