@@ -37,7 +37,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
 
 ### code
 * Analysis steps
-整體分為「離線訓練」與「線上推論」兩條 pipeline,共用同一套 17 維特徵定義(期末架構_v2.md Appendix A 為 single source of truth):
+整體分為「離線訓練」與「線上推論」兩條 pipeline,共用同一套 17 維特徵定義:
   1. 資料採集與清理(M1) —從 YouBike 2.0 Open API 抓取約 1,700+ 站快照,過濾 Quantity > 0、act = 1,計算缺車率
   shortage_rate = 1 − available_rent_bikes / Quantity。
   2. 空間分析(M2,m2/lisa.py) —以 k-NN(k=6)row-normalized 權重矩陣 W 計算:
