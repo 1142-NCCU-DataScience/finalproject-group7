@@ -243,17 +243,17 @@ app_ui = ui.page_fluid(
 )
 
 def server(input, output, session):
+    @reactive.poll(lambda: int(time.time() / 100))
+    def fetch_latest_data():
+        """Read the latest inference results from local JSON"""
+        with open("predictions/latest.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+
     # @reactive.poll(lambda: int(time.time() / 60))
     # def fetch_latest_data():
-    #     """Read the latest inference results from local JSON"""
-    #     with open("predictions/latest.json", "r", encoding="utf-8") as f:
-    #         return json.load(f)
-
-    @reactive.poll(lambda: int(time.time() / 60))
-    def fetch_latest_data():
-        ts = int(time.time() / 60)
-        busted_url = f"{DATA_URL}?t={ts}"
-        return requests.get(busted_url, timeout=10).json()
+    #     ts = int(time.time() / 60)
+    #     busted_url = f"{DATA_URL}?t={ts}"
+    #     return requests.get(busted_url, timeout=10).json()
 
     @render.ui
     def status_banner():
@@ -262,9 +262,12 @@ def server(input, output, session):
         update_time = data.get("update_time", "未知時間")
         model_ver = data.get("model_version", "—")
 
-        icons = {"ok": ("🟢", "#1a7a4a", "系統正常"),
-                 "stale": ("🟡", "#b7680a", "資料延遲中"),
-                 "error": ("🔴", "#b71c1c", "系統異常")}
+        icons = {
+            "ok": ("🟢", "#1a7a4a", "系統正常"),
+            "stale": ("🟡", "#ece332", "資料延遲中"),
+            "degraded": ("🟠", "#d35400", "嚴重延遲"),
+            "error": ("🔴", "#b71c1c", "系統異常")
+        }
         icon, color, label = icons.get(status, icons["error"])
 
         return ui.HTML(f"""
