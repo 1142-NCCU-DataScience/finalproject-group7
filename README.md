@@ -1,7 +1,7 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/xfVbwuLD)
 # [Group7] YouBike 站點投放與缺車率的空間相關性分析
-本專案旨在解決共享單車因通勤時段產生的「需求不對稱」問題。  
-透過空間統計學識別缺車群聚（Spatial Clustering），並結合機器學習模型預測未來 60 分鐘的缺車風險，提供即時調度決策支援。
+本專案旨在解決共享單車因通勤時段產生的「需求不對稱」問題
+透過空間統計學識別缺車群聚（Spatial Clustering），並結合機器學習模型預測未來 60 分鐘的缺車風險，提供即時調度決策支援
 
 ## Contributors
 |組員|系級|學號|工作分配|
@@ -46,7 +46,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   - 特徵工程（M3, m3/build_features.py）：時間 lag（10 / 20 / 30 / 60 分）、變化率（delta）、時間週期特徵（hour 與 day-of-week 的 sin / cos、is_rush_hour、is_weekend）、distance_to_mrt（站點到最近捷運站的 Haversine 距離）
   - 標籤定義：站點 i 在時間 t，若未來 60 分鐘之 shortage_rate > 0.8 則 y = 1
   - 模型訓練與評估（M4, m4/train.py）：產出 model.pkl 與 metadata.json（包含 model_version）
-  - 線上推論（m4/predictor.py）：載入模型，驗證 17 個欄位的順序與 NaN 狀態，輸出 pred_prob，並經由 GitHub repository 中介層提供給 Shiny 前端。
+  - 線上推論（m4/predictor.py）：載入模型，驗證 17 個欄位的順序與 NaN 狀態，輸出 pred_prob，並經由 GitHub repository 中介層提供給 Shiny 前端
 
 * Which method or package do you use?
   - 預測模型：使用 XGBoost（XGBClassifier, objective=binary: logistic）作為二元分類模型，預測未來 60 分鐘缺車機率
@@ -69,7 +69,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   - 空間分析：Global Moran's I 在整段時窗介於 0.146-0.344（mean = 0.279），全部時間點皆達顯著水準（顯示缺車現象具有空間群聚特性）；LISA 找出 4 個「慢性熱點」（≥50% 時間為 HH）、116 個「頻繁熱點」（30-50%）
 * Is the improvement significant?
   - AUC 提升 0.032，Persistence 本身 AUC 已達 0.877（缺車具有強自相關性，因此 baseline 並不弱），所以 3.2pp 的排序能力提升是在高基準上的增益
-  - 真正關鍵在機率校準：Brier 從 0.230 降到 0.127。Persistence 把原始缺車率當機率，校準極差；XGBoost 同時改善排序與機率準確度，這對「Top-k 調度場景（Precision@10 = 0.978）」直接轉化為調度命中率
+  - 真正關鍵在機率校準：Brier 從 0.230 降到 0.127、Persistence 把原始缺車率當機率，校準極差；XGBoost 同時改善排序與機率準確度，這對「Top-k 調度場景（Precision@10 = 0.978）」直接轉化為調度命中率
 
 ## References
 * Packages you use
