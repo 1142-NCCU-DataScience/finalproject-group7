@@ -58,7 +58,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   找收斂點，再以各折 best_iteration 的平均值（397 棵樹）在全部資料上重訓最終模型
   - m4/test.py / 海報圖：額外用時序 80/20 chronological holdout（前 80% 訓練、後 20% 完全分離測試），報告 held-out test 表現
   - 類別不平衡：正負比約 1:2.35，以 scale_pos_weight = neg/pos（負樣本數 / 正樣本數）調整正類別權重
-  - Train-Serve Skew 防護：離線用 groupby('sno').shift(k)、線上用 ring buffer，兩條路徑以 tests/test_feature_parity.py 做 np.allclose(atol = 1e-9) 等價性測試，並驗證切點前 6 筆 lag 為 NaN（防切點洩漏）
+  - Train-Serve Skew 防護：離線用 groupby('sno').shift(k)、線上用 ring buffer，兩條路徑以 code/test_feature_parity.py 做 np.allclose(atol = 1e-9) 等價性測試，並驗證切點前 6 筆 lag 為 NaN（防切點洩漏）
 * What is a null model for comparison?
   Persistence baseline（持續性模型）：直接用「當下的 shortage_rate」當作 60 分鐘後缺車機率的預測（persistence_prob = shortage_rate, code/generate_poster_figures.py:266）
 
