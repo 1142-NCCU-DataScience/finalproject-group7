@@ -15,6 +15,11 @@
 |黃晉澄|資科碩一|114753216|前端展現、資料發布、github管理| 
 
 ## Quick start
+Execute the following command every 10 minutes for online verification and prediction:
+```bash
+python code/online_verify_once.py
+```
+
 Use the following command to start shiny app:
 ```R
 shiny run --reload code/app.py
