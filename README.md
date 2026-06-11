@@ -38,15 +38,15 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
 ### code
 * Analysis steps
 整體分為「離線訓練」與「線上推論」兩條 pipeline，共用同一套 17 維特徵定義：
-  1. 資料採集與清理（M1） - 從 YouBike 2.0 Open API 抓取約 1700 個站點快照，過濾 Quantity > 0、act = 1，計算缺車率
+  - 資料採集與清理（M1）：從 YouBike 2.0 Open API 抓取約 1700 個站點快照，過濾 Quantity > 0、act = 1，計算缺車率
   shortage_rate = 1 − available_rent_bikes / Quantity
-  2. 空間分析（M2, m2/lisa.py） - 以 k-NN（k = 6）row-normalized 權重矩陣 W 計算：
+  - 空間分析（M2, m2/lisa.py）：以 k-NN（k = 6）row-normalized 權重矩陣 W 計算：
     - 連續空間 lag spatial_lag_shortage = W @ shortage_rate（餵模型，特徵 #16）
     - Local Moran's I（LISA） → HH / LL / LH / HL / NS quadrant + pseudo p-value（999 次 conditional permutation；給前端地圖著色，不餵模型，以避免 data leakage）
-  3. 特徵工程（M3, m3/build_features.py） - 時間 lag（10 / 20 / 30 / 60 分）、變化率（delta）、時間週期特徵（hour 與 day-of-week 的 sin / cos、is_rush_hour、is_weekend）、distance_to_mrt（站點到最近捷運站的 Haversine 距離）
-  4. 標籤定義 - 站點 i 在時間 t，若未來 60 分鐘之 shortage_rate > 0.8 則 y = 1
-  5. 模型訓練與評估（M4, m4/train.py） → 產出 model.pkl 與 metadata.json（包含 model_version）
-  6. 線上推論（m4/predictor.py） - 載入模型，驗證 17 個欄位的順序與 NaN 狀態，輸出 pred_prob，並經由 GitHub repository 中介層提供給 Shiny 前端。
+  - 特徵工程（M3, m3/build_features.py）：時間 lag（10 / 20 / 30 / 60 分）、變化率（delta）、時間週期特徵（hour 與 day-of-week 的 sin / cos、is_rush_hour、is_weekend）、distance_to_mrt（站點到最近捷運站的 Haversine 距離）
+  - 標籤定義：站點 i 在時間 t，若未來 60 分鐘之 shortage_rate > 0.8 則 y = 1
+  - 模型訓練與評估（M4, m4/train.py）：產出 model.pkl 與 metadata.json（包含 model_version）
+  - 線上推論（m4/predictor.py）：載入模型，驗證 17 個欄位的順序與 NaN 狀態，輸出 pred_prob，並經由 GitHub repository 中介層提供給 Shiny 前端。
 
 * Which method or package do you use?
   - 預測模型：使用 XGBoost（XGBClassifier, objective=binary: logistic）作為二元分類模型，預測未來 60 分鐘缺車機率
@@ -68,17 +68,17 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   - 最重要特徵：shortage_rate（0.497）≫ lag_10min（0.193）> lag_20min（0.097）- 即時供需與短期 lag 為主要預測訊號
   - 空間分析：Global Moran's I 在整段時窗介於 0.146-0.344（mean = 0.279），全部時間點皆達顯著水準（顯示缺車現象具有空間群聚特性）；LISA 找出 4 個「慢性熱點」（≥50% 時間為 HH）、116 個「頻繁熱點」（30-50%）
 * Is the improvement significant?
-  - AUC 提升 0.032。Persistence 本身 AUC 已達 0.877（缺車具有強自相關性，因此 baseline 並不弱），所以 3.2pp 的排序能力提升是在高基準上的增益
-  - 真正關鍵在機率校準：Brier 從 0.230 降到 0.127，幾乎腰斬。Persistence 把原始缺車率當機率，校準極差；XGBoost 同時改善排序與機率準確度，這對「Top-k 調度場景（Precision@10 = 0.978）」直接轉化為調度命中率
+  - AUC 提升 0.032，Persistence 本身 AUC 已達 0.877（缺車具有強自相關性，因此 baseline 並不弱），所以 3.2pp 的排序能力提升是在高基準上的增益
+  - 真正關鍵在機率校準：Brier 從 0.230 降到 0.127。Persistence 把原始缺車率當機率，校準極差；XGBoost 同時改善排序與機率準確度，這對「Top-k 調度場景（Precision@10 = 0.978）」直接轉化為調度命中率
 
 ## References
 * Packages you use
   Packages: XGBoost、PySAL(libpysal、esda)、scikit-learn、pandas、numpy、joblib；線上系統另用 Shiny for Python、requests、tenacity、loguru、APScheduler
 * Related publications
-  1. Anselin (1995) - LISA, Geographical Analysis 27(2)
-  2. Moran (1950) - Spatial autocorrelation, Biometrika 37
-  3. Rey & Anselin (2007) - PySAL, Review of Regional Studies 37(1)
-  4. Chen & Guestrin (2016) - XGBoost, KDD
-  5. Brier (1950) - Probability forecast verification, Monthly Weather Review 78(1)
-  6. Faghih-Imani & Eluru (2016) - Spatio-temporal bike-sharing demand, J. Transport Geography 54
-  7. YouBike 2.0 Open API（台北市交通局、data.taipei）
+  - Anselin (1995) - LISA, Geographical Analysis 27(2)
+  - Moran (1950) - Spatial autocorrelation, Biometrika 37
+  - Rey & Anselin (2007) - PySAL, Review of Regional Studies 37(1)
+  - Chen & Guestrin (2016) - XGBoost, KDD
+  - Brier (1950) - Probability forecast verification, Monthly Weather Review 78(1)
+  - Faghih-Imani & Eluru (2016) - Spatio-temporal bike-sharing demand, J. Transport Geography 54
+  - YouBike 2.0 Open API（台北市交通局、data.taipei）
