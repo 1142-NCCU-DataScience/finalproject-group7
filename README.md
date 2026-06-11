@@ -5,7 +5,7 @@
 
 ## Demo
 
-[Demo Video](results/demo/demo.mp4)
+![Demo](results/demo/demo.gif)
 
 ## Contributors
 |組員|系級|學號|工作分配|
