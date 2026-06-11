@@ -3,6 +3,10 @@
 本專案旨在解決共享單車因通勤時段產生的「需求不對稱」問題
 透過空間統計學識別缺車群聚（Spatial Clustering），並結合機器學習模型預測未來 60 分鐘的缺車風險，提供即時調度決策支援
 
+## Demo
+
+<video src="results/demo/demo.mov" controls width="800"></video>
+
 ## Contributors
 |組員|系級|學號|工作分配|
 |-|-|-|-|
@@ -68,6 +72,7 @@ idea by Noble WS (2009) [A Quick Guide to Organizing Computational Biology Proje
   Persistence baseline（持續性模型）：直接用「當下的 shortage_rate」當作 60 分鐘後缺車機率的預測（persistence_prob = shortage_rate, code/generate_poster_figures.py:266）
 
 ### results
+* Demo video: [results/demo/demo.mov](results/demo/demo.mov)（Shiny 前端操作示範）
 * What is your performance?
   - 5-fold TimeSeriesSplit CV（metadata）：AUC 0.917、Brier 0.115、Recall 0.853、Precision 0.692
   - 最重要特徵：shortage_rate（0.497）≫ lag_10min（0.193）> lag_20min（0.097）- 即時供需與短期 lag 為主要預測訊號
